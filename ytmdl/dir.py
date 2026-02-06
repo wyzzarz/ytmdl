@@ -8,6 +8,7 @@ from re import sub
 
 from ytmdl import defaults
 from simber import Logger
+from pathlib import Path
 
 logger = Logger("Dir")
 
@@ -33,7 +34,7 @@ def get_abs_path(path_passed: str) -> str:
     return path_passed.split("$")[0]
 
 
-def cleanup(TRACK_INFO, index, datatype, remove_cached=True, filename_passed=None):
+def cleanup(song_index, TRACK_INFO, index, datatype, remove_cached=True, filename_passed=None):
     """Move the song from temp to the song dir."""
     try:
         SONG = glob.glob(os.path.join(
@@ -52,19 +53,13 @@ def cleanup(TRACK_INFO, index, datatype, remove_cached=True, filename_passed=Non
         if filename_passed is not None:
             SONG_NAME = filename_passed + ".{}".format(datatype)
 
-        DIR = defaults.DEFAULT.SONG_DIR
+        DIR, name = make_custom_dir(TRACK_INFO[index], song_index)
         logger.debug("directory being used: ", DIR)
 
-        # Check if DIR has $ in its path
-        # If it does then make those folders accordingly
-
-        if '$' in DIR:
-            DIR, name = make_custom_dir(DIR, TRACK_INFO[index])
-
-            if name is not None:
-                os.rename(SONG, name + '.mp3')
-                SONG_NAME = name + '.mp3'
-                SONG = SONG_NAME
+        if name is not None:
+            os.rename(SONG, name +  ".{}".format(datatype))
+            SONG_NAME = name + '.{}'.format(datatype)
+            SONG = SONG_NAME
 
         dest_filename = os.path.join(
             DIR, __replace_special_characters(SONG_NAME))
@@ -140,64 +135,52 @@ def seperate_kw(uns_kw):
     return sep_kw
 
 
-def make_custom_dir(DIR, TRACK_INFO):
-    """If the dirname has $ in it then we need to make them.
-
+def make_custom_dir(TRACK_INFO, song_index):
+    """Update SONG_DIR by adding song metadata to it.
+    
     The DIR is probably in the format of
-    keyword->keyword->keyword
+    .../$keyword/$keyword/[$keyword]
     """
-    pos = DIR.index('$')
-
-    # base_DIR is where the folders will be made
-    base_DIR = DIR[:pos]
-
-    remaining = DIR[pos + 1:]
-
-    order_dir = seperate_kw(remaining)
-
-    # The last element is to be returned and not considered as
-    # a folder
-    last_element = order_dir[-1]
-
-    # Replace [] from it
-    if last_element[0] == '[' and last_element[-1] == ']':
-
-        last_element = last_element.replace('[', '')
-        last_element = last_element.replace(']', '')
-
-        order_dir[-1] = last_element
-
-        order_dir = ret_proper_names(order_dir)
-
-        last_element = order_dir[-1]
-
-    else:
-        last_element = None
-        order_dir = ret_proper_names(order_dir)
+    DIR = defaults.DEFAULT.SONG_DIR
+    logger.debug("Directory being used: {}".format(DIR))
 
     logger.debug(TRACK_INFO)
 
-    if last_element is not None:
-        last_element = getattr(TRACK_INFO, last_element)
-        order_dir = order_dir[:len(order_dir) - 1]
+    # expand DIR to get rid of any ~ or . and then split into parts
+    DIR = os.path.expanduser(DIR)
+    DIR = os.path.expandvars(DIR)
 
-    for kw_name in order_dir:
-        dir_name = unescape(getattr(TRACK_INFO, kw_name))
+    # Apply keywords to DIR
+    kw = {'Artist': 'artist_name',
+    'Title': 'track_name',
+    'Album': 'collection_name',
+    'Genre': 'primary_genre_name',
+    'TrackNumber': 'track_number',
+    'ReleaseDate': 'release_date',
+    'TrackIndex': 'track_index'
+    }
+    for key, word in kw.items():
+        value = str(getattr(TRACK_INFO, word, "Unknown"))
+        logger.debug("Checking {} with {}".format(key, word))
+        if key == 'TrackIndex':
+            logger.debug("Substituting {} with {}".format(value, song_index + 1))
+            value = str(song_index + 1)
+        if value.isdigit():
+            value = value.zfill(2)
+        DIR = DIR.replace("${}".format(key), __replace_special_characters(value))
 
-        # Sometimes, certain strings have / in the name which creates
-        # issues since those strings are used to create directories.
-        # Whenever there is a /, replace it with -
-        # Sometimes strings also contains [\,?,",<>, *] which may cause error
-        dir_name = sub('[\\\\?<>/"*]', "-", dir_name)
+    # Get last element if it is in the format of [...]
+    path = Path(DIR)
+    parts = [part for part in path.parts if part]  # filter out empty parts
+    last_element = None
+    if parts[-1].startswith('[') and parts[-1].endswith(']'):
+        last_element = parts[-1][1:-1]  # remove the brackets
+        parts = parts[:-1]  # remove the last part from the list
+    base_DIR = os.path.join(*parts)
+    logger.debug("New directory being used: {}".format(base_DIR))
 
-        new_dir = os.path.join(base_DIR, dir_name)
-
-        # Make the dir only if it doesn't already exist
-        if not os.path.isdir(new_dir):
-            os.mkdir(new_dir)
-
-        # Now make the new_dir base_DIR
-        base_DIR = new_dir
+    # create base_DIR if it doesn't exist including missing parents
+    os.makedirs(base_DIR, exist_ok=True)
 
     return (base_DIR, last_element)
 

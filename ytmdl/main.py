@@ -232,7 +232,7 @@ def arguments():
     return args
 
 
-def main(args):
+def main(args, song_index=0):
     """Run on program call."""
 
     song_name, verify_name = extract_song_name(args)
@@ -342,6 +342,7 @@ def main(args):
         # Pass the song for post processing
         try:
             post_processing(
+                song_index,
                 song_title,
                 song_metadata,
                 passed_format,
@@ -368,6 +369,7 @@ def main(args):
 
 
 def post_processing(
+    song_index: int,
     song_name: str,
     song_metadata: str,
     passed_format: str,
@@ -444,7 +446,7 @@ def post_processing(
                 ". Pass `--ignore-errors` or `on-meta-error` to ignore this.")
         return
 
-    if dir.cleanup([track_selected], 0, passed_format, remove_cached=False,
+    if dir.cleanup(song_index, [track_selected], 0, passed_format, remove_cached=False,
                    filename_passed=args.filename):
         logger.info("Done")
 
@@ -596,7 +598,7 @@ def extract_data():
         # Iterate and work on the data.
         # NOTE: song["url"] will contain the URL all right, it won't be just
         # the href.
-        for song in songs:
+        for index, song in enumerate(songs):
             args.url = song["url"]
 
             # Keep compatibility in case the url value changes back to href
@@ -604,7 +606,7 @@ def extract_data():
             if '/' not in args.url:
                 args.url = f"https://www.youtube.com/watch?v={args.url}"
 
-            main(args)
+            main(args, song_index=index)
     else:
         main(args)
 
