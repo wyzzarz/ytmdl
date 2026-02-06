@@ -155,6 +155,48 @@ You can manually install `ytmdl` by cloning this repository and running the `set
    sudo python setup.py install
    ```
 
+### Development
+
+You can manually install `ytmdl` by cloning this repository and installing dependencies.
+
+1. Clone this repo:
+
+   ```console
+   git clone https://github.com/deepjyoti30/ytmdl
+   ```
+
+1. Create virtual environment
+
+   ```console
+   cd ytmdl
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+1. Upgrade pip
+
+   ```console
+   pip install --upgrade pip setuptools wheel
+   ```
+
+1. Install dependencies to solve JS challenges
+
+   ```console
+   brew install deno
+   pip install -U "yt-dlp[default]"
+   ```
+
+1. Install ytmdl for development
+
+   ```console
+   pip install -e .
+   ```
+
+1. Verify
+   ```console
+   ytmdl --help
+   ```
+
 ## Usage
 
 ```console
