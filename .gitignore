@@ -5,3 +5,5 @@ dist/
 ytmdl.*
 ytmdl/__pycache__/*
 .cache
+venv/
+.DS_Store
