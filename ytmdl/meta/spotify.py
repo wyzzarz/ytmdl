@@ -38,6 +38,7 @@ class SpotifySong(object):
         self.collection_name = song["album"]["name"]
         self.primary_genre_name = ""  # Seems spotify doesn't provide genre
         self.track_number = song["track_number"]
+        self.disc_number = song["disc_number"]
         self.artwork_url_100 = song["album"]["images"][0]["url"]
         self.track_time = song["duration_ms"]
 

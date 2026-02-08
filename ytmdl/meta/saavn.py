@@ -86,6 +86,7 @@ class SaavnSong():
         self.collection_name = SONG['album']
         self.primary_genre_name = SONG['language']
         self.track_number = '1'
+        self.disc_number = '1'
         self.artwork_url_100 = self._get_proper_img_url(SONG['image'])
         self.track_time = self._convert_time(SONG['duration'])
 

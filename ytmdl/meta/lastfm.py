@@ -23,6 +23,7 @@ class LastFMSongs():
         self.artist_name = SONG['artist']
         self.provider = 'lastfm'
         self.track_number = "1"
+        self.disc_number = "1"
         self.collection_name = ""
         self.release_date = ""
         self.artwork_url_100 = SONG["image"][-1]["#text"]
@@ -61,6 +62,7 @@ def get_more_data(song):
 
     # Update the songs attributes
     song.track_number = 1
+    song.disc_number = 1
 
     try:
         song.collection_name = track_details["track"]["album"]["title"]

@@ -1,6 +1,5 @@
 """Define functions related to getting tags."""
 
-import itunespy
 import re
 from ytmdl.stringutils import (
     remove_multiple_spaces, remove_punct, compute_jaccard, remove_stopwords,
@@ -9,7 +8,7 @@ from ytmdl.stringutils import (
 from ytmdl import defaults
 from simber import Logger
 from ytmdl.meta import (
-    gaana, deezer, saavn, lastfm, musicbrainz, spotify,
+    gaana, deezer, saavn, lastfm, musicbrainz, spotify, itunes,
     preconfig
 )
 from unidecode import unidecode
@@ -27,12 +26,9 @@ def _logger_provider_error(exception, name):
 
 
 def get_from_itunes(SONG_NAME):
-    """Try to download the metadata using itunespy."""
-    # Try to get the song data from itunes
+    """Try to download the metadata using itunes."""
     try:
-        # Get the country from the config
-        country = defaults.DEFAULT.ITUNES_COUNTRY
-        SONG_INFO = itunespy.search_track(SONG_NAME, country=country)
+        SONG_INFO = itunes.search_track(SONG_NAME)
         return SONG_INFO
     except Exception as e:
         _logger_provider_error(e, 'iTunes')
@@ -104,15 +100,19 @@ def get_from_spotify(SONG_NAME):
 
 
 def lookup_from_itunes(ID):
-    """Lookup metadata by id using itunespy."""
-    # Try to get the song data from itunes
+    """Lookup metadata by id using itunes."""
     try:
-        # Get the country from the config
-        country = defaults.DEFAULT.ITUNES_COUNTRY
-        SONG_INFO = itunespy.lookup_track(int(ID), country=country)
+        SONG_INFO = itunes.lookup_track(int(ID))
+        return SONG_INFO
+    except Exception as e:
+        _logger_provider_error(e, 'iTunes')
+        return None
 
-        # Only keep track results
-        SONG_INFO = [i for i in SONG_INFO if i.type == 'track']
+
+def lookup_from_itunes_album(ID, SONG_NAME, args):
+    """Lookup metadata by id using itunes."""
+    try:
+        SONG_INFO = itunes.lookup_from_itunes_album(ID, SONG_NAME, args)
         return SONG_INFO
     except Exception as e:
         _logger_provider_error(e, 'iTunes')

@@ -35,10 +35,14 @@ config_text = '''#*****************************************#
 # Title  --> Song Name
 # Genre  --> Song Genre
 # TrackNumber --> Song Number in the album
+# TrackIndex  --> Song Index in the search results
 # ReleaseDate --> Song Release date
 #
+# Surround the last part with "[...]" if you want to save the song in
+# that name but not in a separate folder.
+#
 # Following is an example of the format
-#SONG_DIR = "/home/user/Music$Artist->Album->Title"
+#SONG_DIR = "/home/user/Music/$Artist/$Album/[$TrackNumber - $Title]"
 #
 #*****************************************#
 # The QUALITY is the quality of the song in kbps
@@ -276,12 +280,7 @@ def check_config_setup():
 def checkValidity(keyword, value):
     """Check if the user specified value in config is possible."""
     if keyword == 'SONG_DIR':
-        # In this case check if $ and -> are present
-        # If they are then only check if the base dir exists
-        if '$' in value:
-            pos = value.find('$')
-            value = value[:pos]
-        return os.path.isdir(os.path.expanduser(value))
+        return True
     elif keyword == 'QUALITY':
         # Possible values that QUALITY can take
         possQ = ['320', '192']

@@ -27,6 +27,7 @@ class DeezerSongs():
         self.collection_id = SONG['album']['id']
         self.track_id = SONG['id']
         self.track_number = "1"
+        self.disc_number = "1"
         self.collection_name = SONG['album']['title']
         self.artwork_url_100 = SONG['album']['cover_medium']
         self.track_time = self._convert_time(SONG['duration'])
@@ -49,6 +50,7 @@ def get_more_data(song):
 
     song.primary_genre_name = data_album['genres']['data'][0]['name']
     song.track_number = data_track['track_position']
+    song.disc_number = data_track['disk_number']
     song.release_date = data_track['release_date']
 
     return song

@@ -105,6 +105,10 @@ def arguments():
     metadata_group.add_argument(
         '--itunes-id', help="Direct lookup from itunes. If passed, metadata will be automatically added.")
     metadata_group.add_argument(
+        '--itunes-album-id', help="Id or iTunes URL.  Searches for the song within the tracks listed for an\
+                        album in itunes.  If passed, metadata will be automatally\
+                        for the track with the closest title.")
+    metadata_group.add_argument(
         "--spotify-id", help="Direct lookup for Spotify tracks using the ID. If passed, metadata will be automatically added.")
     metadata_group.add_argument("--disable-sort", help="Disable sorting of the metadata \
                         before asking for input. Useful if the song is in some other language \
@@ -232,7 +236,7 @@ def arguments():
     return args
 
 
-def main(args):
+def main(args, song_index=0):
     """Run on program call."""
 
     song_name, verify_name = extract_song_name(args)
@@ -342,6 +346,7 @@ def main(args):
         # Pass the song for post processing
         try:
             post_processing(
+                song_index,
                 song_title,
                 song_metadata,
                 passed_format,
@@ -368,6 +373,7 @@ def main(args):
 
 
 def post_processing(
+    song_index: int,
     song_name: str,
     song_metadata: str,
     passed_format: str,
@@ -444,7 +450,7 @@ def post_processing(
                 ". Pass `--ignore-errors` or `on-meta-error` to ignore this.")
         return
 
-    if dir.cleanup([track_selected], 0, passed_format, remove_cached=False,
+    if dir.cleanup(song_index, [track_selected], 0, passed_format, remove_cached=False,
                    filename_passed=args.filename):
         logger.info("Done")
 
@@ -547,6 +553,26 @@ def extract_song_name(args) -> Tuple[str, bool]:
     return song_name, verify_title
 
 
+def expand_pl_items(range_str):
+    """Expand the playlist items passed as a string into a list of integers."""
+    if range_str is None:
+        return None
+    
+    parts = range_str.split(',')
+    result = []
+    
+    for part in parts:
+        if '-' in part:
+            start, end = map(int, part.split('-'))
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(part))
+    
+    if len(result) == 0:
+        return None
+    
+    return result
+
 def extract_data():
     """Extract the arguments and act accordingly."""
     args = arguments()
@@ -593,10 +619,14 @@ def extract_data():
         # so that the song name will be extracted in main
         args.SONG_NAME = []
 
+        # Expand playist items if passed
+        pl_items = expand_pl_items(args.pl_items)
+        logger.debug("Expanded playlist items: {}".format(pl_items))
+
         # Iterate and work on the data.
         # NOTE: song["url"] will contain the URL all right, it won't be just
         # the href.
-        for song in songs:
+        for index, song in enumerate(songs):
             args.url = song["url"]
 
             # Keep compatibility in case the url value changes back to href
@@ -604,7 +634,15 @@ def extract_data():
             if '/' not in args.url:
                 args.url = f"https://www.youtube.com/watch?v={args.url}"
 
-            main(args)
+            # determine the index of the song
+            if pl_items is not None:
+                # apply playlist index (to be 0-based)
+                index = pl_items[index] - 1
+            elif args.pl_start:
+                # adjust starting index (to be 0-based)
+                index = index + args.pl_start - 1
+
+            main(args, song_index=index)
     else:
         main(args)
 

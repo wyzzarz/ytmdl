@@ -24,6 +24,7 @@ class Meta:
     collection_name     : Name of the album
     primary_genre_name  : Genre of the song
     track_number        : Number of the track in the album
+    disc_number         : Number of the disc in the album
     artwork_url_100     : URL of the album cover
     """
     def __init__(
@@ -34,6 +35,7 @@ class Meta:
         collection_name: str = "N/A",
         primary_genre_name: str = "N/A",
         track_number: str = "1",
+        disc_number: str = "1",
         artwork_url_100: str = ""
     ):
         self.release_date = "{}T00:00:00Z".format(datetime.now().date()) if \
@@ -43,6 +45,7 @@ class Meta:
         self.collection_name = collection_name
         self.primary_genre_name = primary_genre_name
         self.track_number = track_number
+        self.disc_number = disc_number
         self.artwork_url_100 = artwork_url_100
 
     def _read_individual(self, default_value):
@@ -93,6 +96,11 @@ class Meta:
             ), end=": ")
         self.track_number = self._read_individual(self.track_number)
 
+        print("Enter disc number (default: {})".format(
+                    self.disc_number
+            ), end=": ")
+        self.disc_number = self._read_individual(self.disc_number)
+
         print("Enter URL for album cover (default: {})".format(
                     self.artwork_url_100
             ), end=": ")
@@ -121,4 +129,5 @@ if __name__ == "__main__":
     print(meta.artist_name)
     print(meta.primary_genre_name)
     print(meta.track_number)
+    print(meta.disc_number)
     print(meta.artwork_url_100)

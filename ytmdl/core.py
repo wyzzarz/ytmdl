@@ -222,6 +222,9 @@ def meta(conv_name: str, song_name: str, search_by: str, link: str, args):
         # Since above code will return a list with just
         # one element, the option will be set to 0 by
         # default and won't ask the user
+    elif args.itunes_album_id:
+        logger.info('Direct iTunes lookup for album {}...'.format(args.itunes_album_id))
+        TRACK_INFO = metadata.lookup_from_itunes_album(args.itunes_album_id, search_by, args)
     elif args.itunes_id:
         logger.info('Direct iTunes lookup for {}...'.format(args.itunes_id))
         TRACK_INFO = metadata.lookup_from_itunes(args.itunes_id)
