@@ -11,6 +11,7 @@ from mutagen.id3 import (
     TPE1,
     TALB,
     TCON,
+    TPOS,
     TRCK,
     TYER,
     PictureType
@@ -231,7 +232,19 @@ def set_MP3_data(song, song_path):
         data.add(TPE1(encoding=3, text=song.artist_name))
         data.add(TALB(encoding=3, text=song.collection_name))
         data.add(TCON(encoding=3, text=song.primary_genre_name))
-        data.add(TRCK(encoding=3, text=str(song.track_number)))
+
+        # Add track information
+        track_str = str(song.track_number)
+        if hasattr(song, 'track_count'):
+            track_str = f"{track_str}/{song.track_count}"
+        data.add(TRCK(encoding=3, text=track_str))
+        
+        # Add disc information
+        if hasattr(song, 'disc_number'):
+            disc_str = str(song.disc_number)
+            if hasattr(song, 'disc_count'):
+                disc_str = f"{disc_str}/{song.disc_count}"
+            data.add(TPOS(encoding=3, text=disc_str))
 
         data.save()
 
@@ -290,7 +303,7 @@ def set_M4A_data(song, song_path):
         audio["\xa9ART"] = song.artist_name
         audio["\xa9day"] = song.release_date
         audio["\xa9gen"] = song.primary_genre_name
-
+        
         # NOTE: In m4a files, the track number is of the following format
         # track number / track count
         # However, we don't have track count for all songs, so
@@ -299,6 +312,16 @@ def set_M4A_data(song, song_path):
         logger.debug("Adding track count")
         logger.debug(f"Count: {track_count}")
         audio["trkn"] = [(int(song.track_number), int(track_count))]
+
+        # NOTE: In m4a files, the disc number is of the following format
+        # disc number / disc count
+        # However, we don't have disc count for all discs, so
+        # we'll have to find a fallback for that.
+        disc_number = song.disc_number if hasattr(song, 'disc_number') else "1" 
+        disc_count = song.disc_count if hasattr(song, 'disc_count') else "1"
+        logger.debug("Adding disc count")
+        logger.debug(f"Count: {disc_count}")
+        audio["disk"] = [(int(disc_number), int(disc_count))]
 
         audio.save()
 
@@ -450,7 +473,8 @@ def setData(SONG_INFO, is_quiet, song_path, datatype='mp3', choice=None, skip_sh
     print('  || ALBUM: ' + song.collection_name)
     print('  || GENRE: ' + song.primary_genre_name)
     print('  || TRACK NO: ' + str(song.track_number))
-
+    print('  || DISK NO: ' + str(song.disc_number))
+    print('  || DISK COUNT: ' + str(song.disc_count))
     if img_added:
         print('  || ALBUM COVER ADDED')
 

@@ -105,6 +105,7 @@ def ret_proper_names(ordered_names):
                  'Album': 'collection_name',
                  'Genre': 'primary_genre_name',
                  'TrackNumber': 'track_number',
+                 'DiskNumber': 'disc_number',
                  'ReleaseDate': 'release_date'
                  }
 
@@ -156,6 +157,7 @@ def make_custom_dir(TRACK_INFO, song_index):
     'Album': 'collection_name',
     'Genre': 'primary_genre_name',
     'TrackNumber': 'track_number',
+    'DiskNumber': 'disc_number',
     'ReleaseDate': 'release_date',
     'TrackIndex': 'track_index'
     }

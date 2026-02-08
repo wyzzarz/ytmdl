@@ -24,6 +24,7 @@ class GaanaSongs():
         self.collection_name = SONG['album_title']
         self.primary_genre_name = SONG['gener'][0]['name']
         self.track_number = '1'
+        self.disc_number = '1'
         self.artwork_url_100 = SONG['artwork_large']
         self.track_time = self._convert_time(SONG['duration'])
 
