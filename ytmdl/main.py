@@ -606,6 +606,10 @@ def extract_data():
             if '/' not in args.url:
                 args.url = f"https://www.youtube.com/watch?v={args.url}"
 
+            # determine the index of the song
+            if args.pl_start:
+                index = index + args.pl_start - 1
+
             main(args, song_index=index)
     else:
         main(args)
