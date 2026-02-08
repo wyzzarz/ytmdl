@@ -549,6 +549,26 @@ def extract_song_name(args) -> Tuple[str, bool]:
     return song_name, verify_title
 
 
+def expand_pl_items(range_str):
+    """Expand the playlist items passed as a string into a list of integers."""
+    if range_str is None:
+        return None
+    
+    parts = range_str.split(',')
+    result = []
+    
+    for part in parts:
+        if '-' in part:
+            start, end = map(int, part.split('-'))
+            result.extend(range(start, end + 1))
+        else:
+            result.append(int(part))
+    
+    if len(result) == 0:
+        return None
+    
+    return result
+
 def extract_data():
     """Extract the arguments and act accordingly."""
     args = arguments()
@@ -595,6 +615,10 @@ def extract_data():
         # so that the song name will be extracted in main
         args.SONG_NAME = []
 
+        # Expand playist items if passed
+        pl_items = expand_pl_items(args.pl_items)
+        logger.debug("Expanded playlist items: {}".format(pl_items))
+
         # Iterate and work on the data.
         # NOTE: song["url"] will contain the URL all right, it won't be just
         # the href.
@@ -607,7 +631,11 @@ def extract_data():
                 args.url = f"https://www.youtube.com/watch?v={args.url}"
 
             # determine the index of the song
-            if args.pl_start:
+            if pl_items is not None:
+                # apply playlist index (to be 0-based)
+                index = pl_items[index] - 1
+            elif args.pl_start:
+                # adjust starting index (to be 0-based)
                 index = index + args.pl_start - 1
 
             main(args, song_index=index)
