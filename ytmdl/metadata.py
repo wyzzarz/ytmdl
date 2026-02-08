@@ -4,7 +4,7 @@ import itunespy
 import re
 from ytmdl.stringutils import (
     remove_multiple_spaces, remove_punct, compute_jaccard, remove_stopwords,
-    check_keywords
+    check_keywords, get_similar_match
 )
 from ytmdl import defaults
 from simber import Logger
@@ -114,6 +114,43 @@ def lookup_from_itunes(ID):
         # Only keep track results
         SONG_INFO = [i for i in SONG_INFO if i.type == 'track']
         return SONG_INFO
+    except Exception as e:
+        _logger_provider_error(e, 'iTunes')
+        return None
+
+
+def lookup_from_itunes_album(ID, SONG_NAME, args):
+    """Lookup metadata by id using itunespy."""
+    # Try to get the album data from itunes
+    try:
+        # Get the country from the config
+        country = defaults.DEFAULT.ITUNES_COUNTRY
+
+        # Load album info
+        if hasattr(args, 'album_info') and hasattr(args, 'track_names'):
+            ALBUM_INFO = args.album_info
+            TRACK_NAMES = args.track_names
+        else:
+            # Get album and track info from itunes
+            ALBUM_INFO = itunespy.lookup(int(ID), None, None, country, 'music', itunespy.entities['song'], None, 100)
+
+            # Only keep track results
+            ALBUM_INFO = [i for i in ALBUM_INFO if i.type == 'track']
+
+            # Remember album info
+            args.album_info = ALBUM_INFO
+
+            # Remember track names
+            TRACK_NAMES = [track.track_name for track in ALBUM_INFO]
+            args.track_names = TRACK_NAMES
+
+        # Find best matching track
+        _, matches_index = get_similar_match(TRACK_NAMES, SONG_NAME)
+        if matches_index is not None:
+            SONG_INFO = ALBUM_INFO[matches_index]
+            return [SONG_INFO]
+        else:
+            return None
     except Exception as e:
         _logger_provider_error(e, 'iTunes')
         return None

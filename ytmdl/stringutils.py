@@ -33,6 +33,26 @@ def get_closest_match_ignorecase(string_list, string):
             return string_list[tup[1]]
     return None
 
+
+def get_similar_match(string_list, string):
+    """
+        Finds the most similar string in the list and 
+        returns the string in the list and its index.
+    """
+    best_index = None
+    best_ratio = -1
+    
+    for i, track in enumerate(string_list):
+        ratio = difflib.SequenceMatcher(None, string.lower(), track.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_index = i
+
+    if best_index is None:
+        return None, None
+    return string_list[best_index], best_index
+
+
 def escape_characters(string):
     return json.dumps(string)[1:-1]
 

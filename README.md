@@ -282,6 +282,10 @@ Metadata:
   --itunes-id ITUNES_ID
                         Direct lookup from itunes. If passed, metadata will be
                         automatically added.
+  --itunes-album-id ITUNES_ALBUM_ID
+                        Searches for the song within the tracks listed for an
+                        album in itunes.  If passed, metadata will be automatally
+                        for the track with the closest title.
   --spotify-id SPOTIFY_ID
                         Direct lookup for Spotify tracks using the ID. If
                         passed, metadata will be automatically added.

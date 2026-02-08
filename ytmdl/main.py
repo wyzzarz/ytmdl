@@ -105,6 +105,10 @@ def arguments():
     metadata_group.add_argument(
         '--itunes-id', help="Direct lookup from itunes. If passed, metadata will be automatically added.")
     metadata_group.add_argument(
+        '--itunes-album-id', help="Id or iTunes URL.  Searches for the song within the tracks listed for an\
+                        album in itunes.  If passed, metadata will be automatally\
+                        for the track with the closest title.")
+    metadata_group.add_argument(
         "--spotify-id", help="Direct lookup for Spotify tracks using the ID. If passed, metadata will be automatically added.")
     metadata_group.add_argument("--disable-sort", help="Disable sorting of the metadata \
                         before asking for input. Useful if the song is in some other language \
